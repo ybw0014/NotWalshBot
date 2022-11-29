@@ -10,6 +10,7 @@ import dev.kord.gateway.PrivilegedIntent
 import io.github.seggan.notwalshbot.filters.ScamFilter
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
+import org.jetbrains.exposed.sql.Database
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlin.io.path.Path
@@ -24,6 +25,12 @@ fun main() = runBlocking {
         ScamFilter.updateScamCache(this@runBlocking)
     }
     bot.on(consumer = MessageCreateEvent::onMessageSend)
+
+    Database.connect(
+        "jdbc:mariadb://localhost:3306/notwalshbot",
+        user = "root",
+        password = Path("password.txt").readText()
+    )
 
     bot.login {
         @OptIn(PrivilegedIntent::class)
