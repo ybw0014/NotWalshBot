@@ -7,18 +7,21 @@ import dev.kord.core.on
 import dev.kord.gateway.Intents
 import dev.kord.gateway.MessageCreate
 import dev.kord.gateway.PrivilegedIntent
+import io.github.seggan.notwalshbot.filters.ScamFilter
+import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlin.io.path.Path
 import kotlin.io.path.readText
 
-suspend fun main() {
+fun main() = runBlocking {
     bot = Kord(Path("token.txt").readText())
 
     bot.on<ReadyEvent> {
         log("Hello, World!")
         log("Started with session ID `$sessionId` at ${DiscordTimestamp.now()}")
+        ScamFilter.updateScamCache(this@runBlocking)
     }
     bot.on(consumer = MessageCreateEvent::onMessageSend)
 

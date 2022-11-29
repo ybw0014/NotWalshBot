@@ -9,7 +9,7 @@ import io.github.seggan.notwalshbot.filters.SlimeFunFilter
 interface MessageFilter {
 
     companion object {
-        val allFilters = listOf<MessageFilter>(SlimeFunFilter)
+        val allFilters = listOf(SlimeFunFilter, ScamFilter)
     }
 
     /**

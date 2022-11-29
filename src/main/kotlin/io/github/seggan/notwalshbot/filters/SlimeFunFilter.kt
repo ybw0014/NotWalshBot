@@ -1,16 +1,26 @@
 package io.github.seggan.notwalshbot.filters
 
+import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.Message
+import dev.kord.rest.builder.message.create.allowedMentions
 
 object SlimeFunFilter : MessageFilter {
 
     override val delete = false
 
+    private val pattern = "[Ss]lime(?:F|( [Ff]))un".toRegex()
+
     override suspend fun test(message: Message): Boolean {
-        TODO("Not yet implemented")
+        return pattern.containsMatchIn(message.content)
     }
 
     override suspend fun act(message: Message) {
-        TODO("Not yet implemented")
+        message.channel.createMessage {
+            content = "It's Slimefun, not " + pattern.find(message.content)!!.value
+            messageReference = message.id
+            allowedMentions {
+                repliedUser = true
+            }
+        }
     }
 }
