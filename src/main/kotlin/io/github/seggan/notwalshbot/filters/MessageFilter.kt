@@ -1,7 +1,6 @@
 package io.github.seggan.notwalshbot.filters
 
 import dev.kord.core.entity.Message
-import io.github.seggan.notwalshbot.filters.SlimeFunFilter
 
 /**
  * Credits to WalshyDev for the original code
@@ -9,7 +8,7 @@ import io.github.seggan.notwalshbot.filters.SlimeFunFilter
 interface MessageFilter {
 
     companion object {
-        val allFilters = listOf(SlimeFunFilter, ScamFilter)
+        val all = listOf(SlimeFunFilter, ScamFilter)
     }
 
     /**

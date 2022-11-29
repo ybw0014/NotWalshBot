@@ -19,13 +19,3 @@ class Tag(id: EntityID<Int>) : IntEntity(id) {
     var name by Tags.name
     var content by Tags.content
 }
-
-fun main() {
-    transaction {
-        addLogger(StdOutSqlLogger)
-        Tag.new {
-            name = "test"
-            content = "test"
-        }
-    }
-}

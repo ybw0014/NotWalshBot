@@ -1,12 +1,14 @@
 package io.github.seggan.notwalshbot
 
+import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intents
-import dev.kord.gateway.MessageCreate
 import dev.kord.gateway.PrivilegedIntent
+import io.github.seggan.notwalshbot.commands.CommandEvent
+import io.github.seggan.notwalshbot.commands.CommandExecutor
 import io.github.seggan.notwalshbot.filters.ScamFilter
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
@@ -17,15 +19,31 @@ import kotlin.io.path.Path
 import kotlin.io.path.readText
 
 fun main() = runBlocking {
+    println("Starting")
     bot = Kord(Path("token.txt").readText())
 
     bot.on<ReadyEvent> {
         log("Hello, World!")
         log("Started with session ID `$sessionId` at ${DiscordTimestamp.now()}")
         ScamFilter.updateScamCache(this@runBlocking)
+        println("Ready")
     }
     bot.on(consumer = MessageCreateEvent::onMessageSend)
 
+    println("Registering commands")
+    val commandMap = CommandExecutor.all.associateBy {
+        bot.createGuildChatInputCommand(
+            Snowflake(809178621424041997),
+            it.name,
+            it.description,
+            it.args
+        ).id
+    }
+    bot.on<CommandEvent> {
+        commandMap[interaction.command.rootId]?.execute(this)
+    }
+
+    println("Connecting to database")
     Database.connect(
         "jdbc:mariadb://localhost:3306/notwalshbot",
         user = "root",

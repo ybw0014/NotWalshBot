@@ -1,0 +1,18 @@
+package io.github.seggan.notwalshbot.commands
+
+import dev.kord.core.event.interaction.GuildChatInputCommandInteractionCreateEvent
+import dev.kord.rest.builder.interaction.ChatInputCreateBuilder
+
+typealias CommandEvent = GuildChatInputCommandInteractionCreateEvent
+typealias CommandBuilder = ChatInputCreateBuilder.() -> Unit
+
+abstract class CommandExecutor(val name: String, val description: String) {
+
+    companion object {
+        val all = mutableSetOf(TagCommand, PingCommand)
+    }
+
+    abstract val args: CommandBuilder
+
+    abstract suspend fun execute(event: CommandEvent)
+}
