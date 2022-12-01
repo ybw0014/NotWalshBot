@@ -1,9 +1,8 @@
-package io.github.seggan.notwalshbot
+package io.github.seggan.notwalshbot.util
 
 import java.util.concurrent.TimeUnit
 
 data class DiscordTimestamp(val epoch: Long, val style: TimestampStyle = TimestampStyle.LONG_DATE_TIME) {
-
     companion object {
         fun now() = DiscordTimestamp(System.currentTimeMillis())
     }

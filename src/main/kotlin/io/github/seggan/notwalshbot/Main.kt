@@ -9,7 +9,11 @@ import dev.kord.gateway.Intents
 import dev.kord.gateway.PrivilegedIntent
 import io.github.seggan.notwalshbot.commands.CommandEvent
 import io.github.seggan.notwalshbot.commands.CommandExecutor
+import io.github.seggan.notwalshbot.commands.respondPublic
 import io.github.seggan.notwalshbot.filters.ScamFilter
+import io.github.seggan.notwalshbot.server.Channels
+import io.github.seggan.notwalshbot.server.isAtLeast
+import io.github.seggan.notwalshbot.util.DiscordTimestamp
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import org.jetbrains.exposed.sql.Database
@@ -40,7 +44,16 @@ fun main() = runBlocking {
         ).id
     }
     bot.on<CommandEvent> {
-        commandMap[interaction.command.rootId]?.execute(this)
+        val command = commandMap[interaction.command.rootId] ?: return@on
+        val permission = command.permission
+        if (interaction.user.isAtLeast(permission)) {
+            command.execute(this)
+        } else {
+            respondPublic(
+                "You do not have permission to use this command. You must have a permission " +
+                        "level of at least ${permission.level} (`${permission.name}`)"
+            )
+        }
     }
 
     println("Connecting to database")
@@ -50,6 +63,7 @@ fun main() = runBlocking {
         password = Path("password.txt").readText()
     )
 
+    println("Logging in")
     bot.login {
         @OptIn(PrivilegedIntent::class)
         intents = Intents.all

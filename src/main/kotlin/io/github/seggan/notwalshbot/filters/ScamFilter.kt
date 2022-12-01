@@ -4,6 +4,7 @@ import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.Message
 import io.github.seggan.notwalshbot.httpClient
 import io.github.seggan.notwalshbot.log
+import io.github.seggan.notwalshbot.util.NEWLINE
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.time.delay
@@ -15,7 +16,6 @@ object ScamFilter : MessageFilter {
     override val delete = true
 
     private val scamCache = mutableSetOf<String>()
-    private val NEWLINE = "\n".toRegex()
 
     override suspend fun test(message: Message): Boolean {
         if (message.author?.isBot == true) return false
