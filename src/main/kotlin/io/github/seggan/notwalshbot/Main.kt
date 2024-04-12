@@ -5,6 +5,7 @@ import dev.kord.core.Kord
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
+import dev.kord.gateway.ALL
 import dev.kord.gateway.Intents
 import dev.kord.gateway.PrivilegedIntent
 import io.github.seggan.notwalshbot.commands.CommandEvent
@@ -14,11 +15,10 @@ import io.github.seggan.notwalshbot.filters.ScamFilter
 import io.github.seggan.notwalshbot.server.Channels
 import io.github.seggan.notwalshbot.server.isAtLeast
 import io.github.seggan.notwalshbot.util.DiscordTimestamp
+import io.ktor.client.*
+import io.ktor.client.engine.java.*
 import kotlinx.coroutines.runBlocking
-import okhttp3.OkHttpClient
 import org.jetbrains.exposed.sql.Database
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import kotlin.io.path.Path
 import kotlin.io.path.readText
 
@@ -66,15 +66,17 @@ fun main() = runBlocking {
     println("Logging in")
     bot.login {
         @OptIn(PrivilegedIntent::class)
-        intents = Intents.all
+        intents = Intents.ALL
     }
 }
 
 lateinit var bot: Kord
-val httpClient = OkHttpClient()
-
-val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MMMM dd, yyyy hh:mm:ss a z")
-    .withZone(ZoneId.of("America/New_York"))
+val httpClient = HttpClient(Java) {
+    engine {
+        pipelining = true
+        protocolVersion = java.net.http.HttpClient.Version.HTTP_2
+    }
+}
 
 suspend fun log(message: String) {
     Channels.BOT_TESTING.get().createMessage(message)

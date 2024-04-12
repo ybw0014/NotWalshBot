@@ -5,10 +5,12 @@ import dev.kord.core.entity.Message
 import io.github.seggan.notwalshbot.httpClient
 import io.github.seggan.notwalshbot.log
 import io.github.seggan.notwalshbot.util.NEWLINE
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.time.delay
-import okhttp3.Request
 import java.time.Duration
 
 object ScamFilter : MessageFilter {
@@ -37,20 +39,18 @@ object ScamFilter : MessageFilter {
     suspend fun updateScamCache(scope: CoroutineScope) {
         scope.launch {
             while (true) {
-                val body = httpClient.newCall(
-                    Request.Builder()
-                        .url("https://bad-domains.walshy.dev/domains.txt")
-                        .method("GET", null)
-                        .build()
-                ).execute().body
-                if (body == null) {
-                    log("Failed to get scam domains")
-                } else {
-                    body.use {
-                        scamCache.clear()
-                        scamCache.addAll(it.string().split(NEWLINE))
+                val response = httpClient.get("https://bad-domains.walshy.dev/domains.txt")
+                val body = response.bodyAsText()
+                if (response.status == HttpStatusCode.OK) {
+                    val oldCache = scamCache.toSet()
+                    scamCache.clear()
+                    scamCache.addAll(body.split(NEWLINE))
+                    val newLinks = scamCache.size - oldCache.size
+                    if (newLinks > 0) {
+                        log("Updated scam cache with $newLinks new links")
                     }
-                    log("Updated scam domain cache")
+                } else {
+                    log("Failed to update scam cache: ${response.status} $body")
                 }
                 delay(Duration.ofHours(12))
             }

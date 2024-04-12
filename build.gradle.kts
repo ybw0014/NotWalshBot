@@ -1,7 +1,5 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
-    kotlin("jvm") version "1.7.10"
+    kotlin("jvm") version "1.9.23"
     application
 }
 
@@ -19,9 +17,8 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-jdbc:$sqlVersion")
     implementation("org.mariadb.jdbc:mariadb-java-client:3.1.0")
 
-    implementation("dev.kord:kord-core:0.8.0-M17")
-    implementation("com.squareup.okhttp3:okhttp:4.10.0")
-    implementation("com.beust:klaxon:5.6")
+    implementation("dev.kord:kord-core:0.13.1")
+    implementation("io.ktor:ktor-client-java:2.3.10")
 
     testImplementation(kotlin("test"))
 }
@@ -34,6 +31,6 @@ tasks.test {
     useJUnitPlatform()
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+kotlin {
+    jvmToolchain(17)
 }

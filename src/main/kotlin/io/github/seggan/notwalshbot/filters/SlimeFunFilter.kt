@@ -2,7 +2,7 @@ package io.github.seggan.notwalshbot.filters
 
 import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.Message
-import dev.kord.rest.builder.message.create.allowedMentions
+import dev.kord.rest.builder.message.allowedMentions
 
 object SlimeFunFilter : MessageFilter {
 

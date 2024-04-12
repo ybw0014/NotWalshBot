@@ -29,7 +29,7 @@ suspend fun MessageCreateEvent.onMessageSend() {
         }
         if (result != null) {
             message.channel.createMessage {
-                embeds.add(parseMd(result))
+                embeds = mutableListOf(parseMd(result))
             }
         } else {
             message.channel.createMessage("Tag not found")
