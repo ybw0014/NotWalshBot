@@ -10,15 +10,14 @@ import dev.kord.gateway.Intents
 import dev.kord.gateway.PrivilegedIntent
 import io.github.seggan.notwalshbot.commands.CommandEvent
 import io.github.seggan.notwalshbot.commands.CommandExecutor
-import io.github.seggan.notwalshbot.commands.respondPublic
 import io.github.seggan.notwalshbot.filters.ScamFilter
 import io.github.seggan.notwalshbot.server.Channels
 import io.github.seggan.notwalshbot.server.isAtLeast
 import io.github.seggan.notwalshbot.util.DiscordTimestamp
+import io.github.seggan.notwalshbot.util.respondEphemeral
 import io.ktor.client.*
 import io.ktor.client.engine.java.*
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.exposed.sql.Database
 import kotlin.io.path.Path
 import kotlin.io.path.readText
 
@@ -37,7 +36,7 @@ fun main() = runBlocking {
     println("Registering commands")
     val commandMap = CommandExecutor.all.associateBy {
         bot.createGuildChatInputCommand(
-            Snowflake(809178621424041997),
+            SERVER_ID,
             it.name,
             it.description,
             it.args
@@ -46,22 +45,12 @@ fun main() = runBlocking {
     bot.on<CommandEvent> {
         val command = commandMap[interaction.command.rootId] ?: return@on
         val permission = command.permission
-        if (interaction.user.isAtLeast(permission)) {
-            command.execute(this)
+        if (permission == null || interaction.user.isAtLeast(permission)) {
+            with(command) { execute() }
         } else {
-            respondPublic(
-                "You do not have permission to use this command. You must have a permission " +
-                        "level of at least ${permission.level} (`${permission.name}`)"
-            )
+            respondEphemeral("You do not have permission to use this command.")
         }
     }
-
-    println("Connecting to database")
-    Database.connect(
-        "jdbc:mariadb://localhost:3306/notwalshbot",
-        user = "root",
-        password = Path("password.txt").readText()
-    )
 
     println("Logging in")
     bot.login {
@@ -77,6 +66,8 @@ val httpClient = HttpClient(Java) {
         protocolVersion = java.net.http.HttpClient.Version.HTTP_2
     }
 }
+
+val SERVER_ID = Snowflake(809178621424041997)
 
 suspend fun log(message: String) {
     Channels.BOT_TESTING.get().createMessage(message)

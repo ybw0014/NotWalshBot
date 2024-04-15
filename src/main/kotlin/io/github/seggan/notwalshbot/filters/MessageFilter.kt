@@ -12,13 +12,6 @@ interface MessageFilter {
     }
 
     /**
-     * If the message should be deleted
-     *
-     * @return True if the message should be deleted, false otherwise
-     */
-    val delete: Boolean
-
-    /**
      * Check the message to see if it should be filtered
      *
      * @param message The message to check
@@ -30,6 +23,7 @@ interface MessageFilter {
      * What to do when the message is filtered
      *
      * @param message The message that was filtered
+     * @return The message to log
      */
-    suspend fun act(message: Message)
+    suspend fun act(message: Message): String?
 }

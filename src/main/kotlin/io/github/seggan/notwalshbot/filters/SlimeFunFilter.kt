@@ -6,15 +6,13 @@ import dev.kord.rest.builder.message.allowedMentions
 
 object SlimeFunFilter : MessageFilter {
 
-    override val delete = false
-
     private val pattern = "[Ss]lime(?:F|( [Ff]))un".toRegex()
 
     override suspend fun test(message: Message): Boolean {
         return pattern.containsMatchIn(message.content)
     }
 
-    override suspend fun act(message: Message) {
+    override suspend fun act(message: Message): String? {
         message.channel.createMessage {
             content = "It's Slimefun, not " + pattern.find(message.content)!!.value
             messageReference = message.id
@@ -22,5 +20,6 @@ object SlimeFunFilter : MessageFilter {
                 repliedUser = true
             }
         }
+        return null
     }
 }

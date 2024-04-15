@@ -3,12 +3,10 @@ package io.github.seggan.notwalshbot.commands
 import dev.kord.core.entity.interaction.SubCommand
 import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.interaction.subCommand
-import io.github.seggan.notwalshbot.db.Tag
-import io.github.seggan.notwalshbot.db.Tags
-import io.github.seggan.notwalshbot.server.Permission
-import io.github.seggan.notwalshbot.util.NEWLINE
-import io.github.seggan.notwalshbot.util.SLASH_N
-import org.jetbrains.exposed.sql.transactions.transaction
+import io.github.seggan.notwalshbot.Tags
+import io.github.seggan.notwalshbot.server.Roles
+import io.github.seggan.notwalshbot.server.Tag
+import io.github.seggan.notwalshbot.util.respondPublic
 
 object TagCommand : CommandExecutor("tag", "Tag management") {
 
@@ -28,14 +26,18 @@ object TagCommand : CommandExecutor("tag", "Tag management") {
             string("name", "The name of the tag") { required = true }
         }
         subCommand("list", "Lists all tags")
+        subCommand("alias", "Creates an alias to a tag") {
+            string("name", "The name of the alias") { required = true }
+            string("target", "The name of the target tag") { required = true }
+        }
     }
 
-    override val permission = Permission.ADDON_DEVELOPER
+    override val permission = Roles.addonDeveloper
 
-    override suspend fun execute(event: CommandEvent): Unit = with(event) {
+    override suspend fun CommandEvent.execute() {
         val command = interaction.command as SubCommand
         val tname = command.options["name"]!!.value as String
-        val tcontent = (command.options["content"]?.value as? String)?.replace(SLASH_N, "\n")
+        val tcontent = command.options["content"]?.value as? String
 
         when (command.name) {
             "create" -> {
@@ -43,23 +45,11 @@ object TagCommand : CommandExecutor("tag", "Tag management") {
                     respondPublic("You need to provide content")
                     return
                 }
-
-                transaction {
-                    Tag.new {
-                        name = tname
-                        content = tcontent
-                    }
-                }
-
+                Tags[tname] = Tag.Normal(tname, tcontent)
                 respondPublic("Tag created")
             }
             "delete" -> {
-                val response = transaction {
-                    val tag = Tag.find { Tags.name eq tname }.firstOrNull()
-                    tag?.delete()
-                    return@transaction if (tag != null) "Tag deleted" else "Tag not found"
-                }
-
+                val response = if (Tags.remove(tname) != null) "Tag deleted" else "Tag not found"
                 respondPublic(response)
             }
             "edit" -> {
@@ -67,28 +57,35 @@ object TagCommand : CommandExecutor("tag", "Tag management") {
                     respondPublic("You need to provide content")
                     return
                 }
-
-                val response = transaction {
-                    val tag = Tag.find { Tags.name eq tname }.firstOrNull()
-                    tag?.content = tcontent
-                    return@transaction if (tag != null) "Tag edited" else "Tag not found"
+                if (Tags[tname] == null) {
+                    respondPublic("Tag not found")
+                    return
                 }
-
-                respondPublic(response)
+                Tags[tname] = Tag.Normal(tname, tcontent)
+                respondPublic("Tag edited")
             }
             "raw" -> {
-                val response = transaction {
-                    Tag.find { Tags.name eq tname }.firstOrNull()?.content
+                val tag = Tags[tname]
+                if (tag == null) {
+                    respondPublic("Tag not found")
+                    return
                 }
-
-                respondPublic(response?.replace(NEWLINE, "\\\\n") ?: "Tag not found")
+                var content = tag.content
+                content = content.replace("#", "\\#")
+                content = content.replace("-", "\\-")
+                respondPublic(content)
             }
             "list" -> {
-                val response = transaction {
-                    Tag.all().joinToString("\n") { it.name }
+                respondPublic(Tags.values.joinToString("\n") { it.name })
+            }
+            "alias" -> {
+                val target = command.options["target"]!!.value as String
+                if (Tags[target] == null) {
+                    respondPublic("Target tag not found")
+                    return
                 }
-
-                respondPublic(response)
+                Tags[tname] = Tag.Alias(tname, target)
+                respondPublic("Alias created")
             }
         }
     }

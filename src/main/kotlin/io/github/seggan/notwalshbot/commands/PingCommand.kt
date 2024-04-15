@@ -1,15 +1,12 @@
 package io.github.seggan.notwalshbot.commands
 
-import dev.kord.core.behavior.interaction.response.respond
+import io.github.seggan.notwalshbot.util.respondPublic
 
 object PingCommand : CommandExecutor("ping", "pong") {
 
     override val args: CommandBuilder = {}
 
-    override suspend fun execute(event: CommandEvent): Unit = with(event) {
-        val response = interaction.deferPublicResponse()
-        response.respond {
-            content = "Pong!"
-        }
+    override suspend fun CommandEvent.execute() {
+        respondPublic("Pong!")
     }
 }

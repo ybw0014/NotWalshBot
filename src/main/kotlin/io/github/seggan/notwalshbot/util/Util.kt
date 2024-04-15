@@ -1,49 +1,18 @@
 package io.github.seggan.notwalshbot.util
 
-import dev.kord.rest.builder.message.EmbedBuilder
+import dev.kord.core.behavior.MessageBehavior
+import dev.kord.core.behavior.interaction.response.respond
+import dev.kord.core.behavior.reply
+import dev.kord.core.entity.Message
+import dev.kord.core.entity.interaction.response.EphemeralMessageInteractionResponse
+import dev.kord.core.entity.interaction.response.PublicMessageInteractionResponse
+import io.github.seggan.notwalshbot.commands.CommandEvent
 
-val NEWLINE = "\n".toRegex()
-val SLASH_N = "\\\\n".toRegex()
+suspend fun MessageBehavior.replyWith(content: String): Message = reply { this.content = content }
+suspend fun CommandEvent.respondPublic(message: String): PublicMessageInteractionResponse {
+    return this.interaction.deferPublicResponse().respond { content = message }
+}
 
-fun parseMd(string: String): EmbedBuilder {
-    val lines = string.split(NEWLINE).toMutableList()
-    return EmbedBuilder().apply {
-        val footerMd = lines.firstOrNull { it.startsWith("###") }
-        if (footerMd != null) {
-            footer {
-                text = footerMd.drop(3)
-            }
-            lines.remove(footerMd)
-        }
-        var currentField: EmbedBuilder.Field? = null
-        val sb = StringBuilder()
-        for (line in lines) {
-            if (line.startsWith("##")) {
-                if (currentField != null) {
-                    currentField.value = currentField.value.trim()
-                    fields.add(currentField)
-                }
-                currentField = EmbedBuilder.Field()
-                currentField.name = line.drop(2)
-                lines.remove(line)
-            } else if (!line.startsWith('#')) {
-                var processed = line
-                if (processed.startsWith("- ")) {
-                    processed = "•" + processed.drop(1)
-                }
-                if (currentField == null) {
-                    sb.appendLine(processed)
-                } else {
-                    currentField.value = currentField.value + processed + "\n"
-                }
-                lines.remove(line)
-            }
-        }
-        val extraText = sb.toString().trim()
-        if (extraText.isNotEmpty()) {
-            description = extraText
-        }
-
-        title = lines.firstOrNull { it.startsWith('#') }?.drop(1)
-    }
+suspend fun CommandEvent.respondEphemeral(message: String): EphemeralMessageInteractionResponse {
+    return this.interaction.deferEphemeralResponse().respond { content = message }
 }
