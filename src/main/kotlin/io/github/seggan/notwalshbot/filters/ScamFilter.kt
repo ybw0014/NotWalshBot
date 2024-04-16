@@ -8,11 +8,11 @@ import io.github.seggan.notwalshbot.server.Channels
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.seconds
 
 object ScamFilter : MessageFilter {
 
-    private val scamCache = mutableSetOf<String>()
+    private val scamCache = mutableSetOf<Regex>()
 
     override suspend fun test(message: Message): Boolean {
         if (message.author?.isBot == true) return false
@@ -23,9 +23,10 @@ object ScamFilter : MessageFilter {
         message.delete("Scam link detected")
         message.getAuthorAsMember().ban {
             reason = "Scam link"
-            deleteMessageDuration = 1.hours
+            deleteMessageDuration = 0.seconds
         }
-        Channels.BOT_LOGS.get().createMessage("Banned ${message.author?.mention} for sending scam link")
+        Channels.BOT_LOGS.get()
+            .createMessage("Banned ${message.author?.mention} for sending scam link: ${message.content}")
     }
 
     suspend fun updateScamCache() {
@@ -45,7 +46,11 @@ object ScamFilter : MessageFilter {
         val response = httpClient.get(url)
         val body = response.bodyAsText()
         if (response.status == HttpStatusCode.OK) {
-            scamCache.addAll(body.split('\n'))
+            scamCache.addAll(
+                body.split('\n')
+                    .filter { it.isNotBlank() }
+                    .map { it.toRegex() }
+            )
         } else {
             log("Failed to add scam links: ${response.status} $body")
         }

@@ -97,5 +97,5 @@ val httpClient = HttpClient(Java) {
 val SERVER_ID = Snowflake(809178621424041997)
 
 suspend fun log(message: String) {
-    Channels.BOT_TESTING.get().createMessage(message)
+    Channels.BOT_LOGS.get().createMessage(message)
 }
