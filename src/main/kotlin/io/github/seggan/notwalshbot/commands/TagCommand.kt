@@ -99,8 +99,8 @@ object TagCommand : CommandExecutor("tag", "Tag management") {
                     onSubmit {
                         val newName = interaction.textInputs["name"]!!.value!!
                         val content = interaction.textInputs["content"]!!.value!!
-                        Tags[newName] = Tag.Normal(newName, content)
                         Tags.remove(name!!)
+                        Tags[newName] = Tag.Normal(newName, content)
                         Tags.save()
                         interaction.respondPublic("Tag `$name` edited to `$newName`")
                     }
