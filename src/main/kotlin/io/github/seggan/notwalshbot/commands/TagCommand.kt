@@ -21,12 +21,7 @@ object TagCommand : CommandExecutor("tag", "Tag management") {
             string("name", "The name of the tag") { required = true }
         }
         subCommand("edit", "Edits a tag") {
-            string("name", "The name of the tag") {
-                required = true
-                for (tag in Tags) {
-                    choice(tag.name, tag.name)
-                }
-            }
+            string("name", "The name of the tag") { required = true }
         }
         subCommand("list", "Lists all tags")
         subCommand("alias", "Creates an alias to a tag") {
