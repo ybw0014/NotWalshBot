@@ -16,6 +16,7 @@ dependencies {
     implementation("dev.kord:kord-core:0.13.1")
     implementation("io.ktor:ktor-client-java:2.3.10")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json")
+    implementation("org.slf4j:slf4j-simple:2.0.13")
 }
 
 application {

@@ -7,6 +7,6 @@ object PingCommand : CommandExecutor("ping", "pong") {
     override val args: CommandBuilder = {}
 
     override suspend fun CommandEvent.execute() {
-        respondPublic("Pong!")
+        interaction.respondPublic("Pong!")
     }
 }

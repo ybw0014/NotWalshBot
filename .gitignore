@@ -45,3 +45,4 @@ bin/
 ### Project specific ###
 token.txt
 password.txt
+data/

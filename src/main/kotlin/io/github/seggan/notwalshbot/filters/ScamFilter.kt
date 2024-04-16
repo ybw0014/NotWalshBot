@@ -20,12 +20,7 @@ object ScamFilter : MessageFilter {
 
     override suspend fun test(message: Message): Boolean {
         if (message.author?.isBot == true) return false
-        for (link in scamCache) {
-            if (message.content.contains(link)) {
-                return true
-            }
-        }
-        return false
+        return scamCache.any { it in message.content }
     }
 
     override suspend fun act(message: Message): String? {
