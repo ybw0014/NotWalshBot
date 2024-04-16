@@ -1,4 +1,4 @@
-package io.github.seggan.notwalshbot.server
+package io.github.seggan.notwalshbot.server.tags
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
@@ -7,7 +7,7 @@ import kotlinx.serialization.json.encodeToStream
 import kotlin.io.path.*
 
 @OptIn(ExperimentalSerializationApi::class)
-object Tags : MutableIterable<Tag> {
+object Tags : Iterable<Tag> {
 
     private val tagsFile = Path("data/tags.json")
     private val tags: MutableMap<String, Tag>
@@ -18,7 +18,7 @@ object Tags : MutableIterable<Tag> {
             tagsFile.writeText("[]")
         }
         val loaded: List<Tag> = tagsFile.inputStream().use(Json::decodeFromStream)
-        tags = loaded.associateBy { it.name }.toMutableMap()
+        tags = loaded.associateByTo(mutableMapOf(), Tag::name)
     }
 
     fun save() {
@@ -39,5 +39,5 @@ object Tags : MutableIterable<Tag> {
 
     fun remove(key: String): Tag? = tags.remove(key)
 
-    override fun iterator(): MutableIterator<Tag> = tags.values.iterator()
+    override fun iterator(): Iterator<Tag> = tags.values.iterator()
 }

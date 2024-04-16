@@ -8,10 +8,6 @@ import io.github.seggan.notwalshbot.server.Channels
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 
 object ScamFilter : MessageFilter {
@@ -32,26 +28,27 @@ object ScamFilter : MessageFilter {
         Channels.BOT_LOGS.get().createMessage("Banned ${message.author?.mention} for sending scam link")
     }
 
-    suspend fun updateScamCache(scope: CoroutineScope) {
-        scope.launch {
-            while (true) {
-                val response = httpClient.get(SCAM_DOMAINS_URL)
-                val body = response.bodyAsText()
-                if (response.status == HttpStatusCode.OK) {
-                    val oldCache = scamCache.toSet()
-                    scamCache.clear()
-                    scamCache.addAll(body.split('\n'))
-                    val newLinks = scamCache.size - oldCache.size
-                    if (newLinks > 0) {
-                        log("Updated scam cache with $newLinks new links")
-                    }
-                } else {
-                    log("Failed to update scam cache: ${response.status} $body")
-                }
-                delay(1.days)
-            }
+    suspend fun updateScamCache() {
+        val oldCacheSize = scamCache.size
+        scamCache.clear()
+        addToScamCache("https://bad-domains.walshy.dev/domains.txt")
+        addToScamCache("https://raw.githubusercontent.com/DevSpen/scam-links/master/src/links.txt")
+        addToScamCache("https://raw.githubusercontent.com/BuildBot42/discord-scam-links/main/list.txt")
+        addToScamCache("https://raw.githubusercontent.com/Discord-AntiScam/scam-links/main/list.txt")
+        val newLinks = scamCache.size - oldCacheSize
+        if (newLinks > 0) {
+            log("Updated scam cache with $newLinks new links")
+        }
+    }
+
+    private suspend fun addToScamCache(url: String) {
+        val response = httpClient.get(url)
+        val body = response.bodyAsText()
+        if (response.status == HttpStatusCode.OK) {
+            scamCache.addAll(body.split('\n'))
+        } else {
+            log("Failed to add scam links: ${response.status} $body")
         }
     }
 }
 
-private const val SCAM_DOMAINS_URL = "https://bad-domains.walshy.dev/domains.txt"

@@ -6,8 +6,8 @@ import dev.kord.core.entity.interaction.SubCommand
 import dev.kord.rest.builder.interaction.string
 import dev.kord.rest.builder.interaction.subCommand
 import io.github.seggan.notwalshbot.server.Roles
-import io.github.seggan.notwalshbot.server.Tag
-import io.github.seggan.notwalshbot.server.Tags
+import io.github.seggan.notwalshbot.server.tags.Tag
+import io.github.seggan.notwalshbot.server.tags.Tags
 import io.github.seggan.notwalshbot.util.onSubmit
 import io.github.seggan.notwalshbot.util.respondPublic
 

@@ -17,15 +17,18 @@ import io.github.seggan.notwalshbot.filters.InviteFilter
 import io.github.seggan.notwalshbot.filters.ScamFilter
 import io.github.seggan.notwalshbot.server.Channels
 import io.github.seggan.notwalshbot.server.isAtLeast
-import io.github.seggan.notwalshbot.util.DiscordTimestamp
 import io.github.seggan.notwalshbot.util.componentMap
 import io.github.seggan.notwalshbot.util.modalMap
 import io.github.seggan.notwalshbot.util.respondEphemeral
 import io.ktor.client.*
 import io.ktor.client.engine.java.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.Clock
 import kotlin.io.path.Path
 import kotlin.io.path.readText
+import kotlin.time.Duration.Companion.days
 
 fun main() {
     DecoroutinatorRuntime.load()
@@ -35,9 +38,7 @@ fun main() {
 
         bot.on<ReadyEvent> {
             log("Hello, World!")
-            log("Started with session ID `$sessionId` at ${DiscordTimestamp.now()}")
-            ScamFilter.updateScamCache(this@runBlocking)
-            InviteFilter.updateBadWords(this@runBlocking)
+            log("Started with session ID `$sessionId` at <t:${Clock.System.now().epochSeconds}:F>")
             println("Ready")
         }
         bot.on(consumer = MessageCreateEvent::onMessageSend)
@@ -67,6 +68,14 @@ fun main() {
         bot.on<ModalSubmitInteractionCreateEvent> {
             val action = modalMap[interaction.modalId] ?: return@on
             action()
+        }
+
+        launch {
+            while (true) {
+                ScamFilter.updateScamCache()
+                InviteFilter.updateBadWords()
+                delay(1.days)
+            }
         }
 
         println("Logging in")

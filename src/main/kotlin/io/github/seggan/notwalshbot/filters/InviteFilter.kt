@@ -14,9 +14,6 @@ import io.github.seggan.notwalshbot.util.respondPublic
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -72,7 +69,8 @@ object InviteFilter : MessageFilter {
                                 reason = "NSFW server invite"
                                 deleteMessageDuration = 0.seconds
                             }
-                            member.getDmChannel().createMessage("You have been banned for sending an NSFW server invite")
+                            member.getDmChannel()
+                                .createMessage("You have been banned for sending an NSFW server invite")
                             interaction.respondPublic("Banned ${message.author?.mention} for sending NSFW server invite")
                         }
                     }
@@ -88,10 +86,12 @@ object InviteFilter : MessageFilter {
                     }
                 }
             }
-            member.getDmChannel().createMessage("""
+            member.getDmChannel().createMessage(
+                """
                 Hey, it looks like you sent an invite to a server. Invites are not allowed here. You are temporarily muted for 7 days while the staff review the invite.
                 If the server is not NSFW, you will be cleared shortly.
-                """.trimIndent())
+                """.trimIndent()
+            )
         }
     }
 
@@ -104,17 +104,14 @@ object InviteFilter : MessageFilter {
         return "Unknown"
     }
 
-    suspend fun updateBadWords(scope: CoroutineScope) {
-        scope.launch {
-            val response = httpClient.get(BAD_WORDS_URL)
-            if (response.status.isSuccess()) {
-                badWords.clear()
-                badWords.addAll(response.bodyAsText()
-                    .split('\n')
-                    .filter { it.isNotBlank() }
-                    .map { """\b$it\b""".toRegex() })
-            }
-            delay(1.days)
+    suspend fun updateBadWords() {
+        val response = httpClient.get(BAD_WORDS_URL)
+        if (response.status.isSuccess()) {
+            badWords.clear()
+            badWords.addAll(response.bodyAsText()
+                .split('\n')
+                .filter { it.isNotBlank() }
+                .map { """\b$it\b""".toRegex() })
         }
     }
 }

@@ -1,4 +1,4 @@
-package io.github.seggan.notwalshbot.server
+package io.github.seggan.notwalshbot.server.tags
 
 import kotlinx.serialization.Serializable
 

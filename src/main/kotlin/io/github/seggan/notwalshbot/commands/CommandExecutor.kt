@@ -10,7 +10,7 @@ typealias CommandBuilder = ChatInputCreateBuilder.() -> Unit
 abstract class CommandExecutor(val name: String, val description: String) {
 
     companion object {
-        val all = mutableSetOf(TagCommand, PingCommand)
+        val all = mutableSetOf(TagCommand, PingCommand, ReportCommand, WarnCommand)
     }
 
     abstract val args: CommandBuilder
