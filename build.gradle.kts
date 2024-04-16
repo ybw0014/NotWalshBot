@@ -17,6 +17,8 @@ dependencies {
     implementation("io.ktor:ktor-client-java:2.3.10")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json")
     implementation("org.slf4j:slf4j-simple:2.0.13")
+
+    implementation("dev.reformator.stacktracedecoroutinator:stacktrace-decoroutinator-jvm:2.3.8")
 }
 
 application {

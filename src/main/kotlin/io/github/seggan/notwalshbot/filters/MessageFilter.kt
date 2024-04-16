@@ -8,7 +8,7 @@ import dev.kord.core.entity.Message
 interface MessageFilter {
 
     companion object {
-        val all = listOf(SlimeFunFilter, ScamFilter)
+        val all = listOf(SlimeFunFilter, ScamFilter, InviteFilter)
     }
 
     /**
@@ -23,7 +23,6 @@ interface MessageFilter {
      * What to do when the message is filtered
      *
      * @param message The message that was filtered
-     * @return The message to log
      */
-    suspend fun act(message: Message): String?
+    suspend fun act(message: Message)
 }

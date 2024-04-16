@@ -1,8 +1,7 @@
 package io.github.seggan.notwalshbot.filters
 
-import dev.kord.core.behavior.channel.createMessage
 import dev.kord.core.entity.Message
-import dev.kord.rest.builder.message.allowedMentions
+import io.github.seggan.notwalshbot.util.replyWith
 
 object SlimeFunFilter : MessageFilter {
 
@@ -12,14 +11,7 @@ object SlimeFunFilter : MessageFilter {
         return pattern.containsMatchIn(message.content)
     }
 
-    override suspend fun act(message: Message): String? {
-        message.channel.createMessage {
-            content = "It's Slimefun, not " + pattern.find(message.content)!!.value
-            messageReference = message.id
-            allowedMentions {
-                repliedUser = true
-            }
-        }
-        return null
+    override suspend fun act(message: Message) {
+        message.replyWith("It's Slimefun, not " + pattern.find(message.content)!!.value)
     }
 }

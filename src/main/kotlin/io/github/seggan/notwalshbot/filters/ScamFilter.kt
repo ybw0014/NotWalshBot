@@ -1,18 +1,18 @@
 package io.github.seggan.notwalshbot.filters
 
-import dev.kord.core.behavior.edit
+import dev.kord.core.behavior.ban
 import dev.kord.core.entity.Message
 import io.github.seggan.notwalshbot.httpClient
 import io.github.seggan.notwalshbot.log
+import io.github.seggan.notwalshbot.server.Channels
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.time.delay
-import kotlinx.datetime.Clock
-import java.time.Duration
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
 
 object ScamFilter : MessageFilter {
 
@@ -23,20 +23,19 @@ object ScamFilter : MessageFilter {
         return scamCache.any { it in message.content }
     }
 
-    override suspend fun act(message: Message): String? {
+    override suspend fun act(message: Message) {
         message.delete("Scam link detected")
-        val member = message.getAuthorAsMember()
-        member.edit {
-            communicationDisabledUntil = Clock.System.now() + 7.days
-            reason = "Scam link detected"
+        message.getAuthorAsMember().ban {
+            reason = "Scam link"
+            deleteMessageDuration = 1.hours
         }
-        return "Deleted scam link from ${member.mention} in ${message.channel.asChannel().data.name.value}. The member has been muted for 7 days until further moderator action."
+        Channels.BOT_LOGS.get().createMessage("Banned ${message.author?.mention} for sending scam link")
     }
 
     suspend fun updateScamCache(scope: CoroutineScope) {
         scope.launch {
             while (true) {
-                val response = httpClient.get("https://bad-domains.walshy.dev/domains.txt")
+                val response = httpClient.get(SCAM_DOMAINS_URL)
                 val body = response.bodyAsText()
                 if (response.status == HttpStatusCode.OK) {
                     val oldCache = scamCache.toSet()
@@ -49,8 +48,10 @@ object ScamFilter : MessageFilter {
                 } else {
                     log("Failed to update scam cache: ${response.status} $body")
                 }
-                delay(Duration.ofHours(12))
+                delay(1.days)
             }
         }
     }
 }
+
+private const val SCAM_DOMAINS_URL = "https://bad-domains.walshy.dev/domains.txt"

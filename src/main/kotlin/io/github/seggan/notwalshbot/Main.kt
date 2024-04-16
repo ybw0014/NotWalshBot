@@ -10,8 +10,10 @@ import dev.kord.core.on
 import dev.kord.gateway.ALL
 import dev.kord.gateway.Intents
 import dev.kord.gateway.PrivilegedIntent
+import dev.reformator.stacktracedecoroutinator.runtime.DecoroutinatorRuntime
 import io.github.seggan.notwalshbot.commands.CommandEvent
 import io.github.seggan.notwalshbot.commands.CommandExecutor
+import io.github.seggan.notwalshbot.filters.InviteFilter
 import io.github.seggan.notwalshbot.filters.ScamFilter
 import io.github.seggan.notwalshbot.server.Channels
 import io.github.seggan.notwalshbot.server.isAtLeast
@@ -25,49 +27,53 @@ import kotlinx.coroutines.runBlocking
 import kotlin.io.path.Path
 import kotlin.io.path.readText
 
-fun main() = runBlocking {
-    println("Starting")
-    bot = Kord(Path("token.txt").readText())
+fun main() {
+    DecoroutinatorRuntime.load()
+    runBlocking {
+        println("Starting")
+        bot = Kord(Path("token.txt").readText())
 
-    bot.on<ReadyEvent> {
-        log("Hello, World!")
-        log("Started with session ID `$sessionId` at ${DiscordTimestamp.now()}")
-        ScamFilter.updateScamCache(this@runBlocking)
-        println("Ready")
-    }
-    bot.on(consumer = MessageCreateEvent::onMessageSend)
-
-    println("Registering commands")
-    val commandMap = CommandExecutor.all.associateBy {
-        bot.createGuildChatInputCommand(
-            SERVER_ID,
-            it.name,
-            it.description,
-            it.args
-        ).id
-    }
-    bot.on<CommandEvent> {
-        val command = commandMap[interaction.command.rootId] ?: return@on
-        val permission = command.permission
-        if (permission == null || interaction.user.isAtLeast(permission)) {
-            with(command) { execute() }
-        } else {
-            interaction.respondEphemeral("You do not have permission to use this command.")
+        bot.on<ReadyEvent> {
+            log("Hello, World!")
+            log("Started with session ID `$sessionId` at ${DiscordTimestamp.now()}")
+            ScamFilter.updateScamCache(this@runBlocking)
+            InviteFilter.updateBadWords(this@runBlocking)
+            println("Ready")
         }
-    }
-    bot.on<ComponentInteractionCreateEvent> {
-        val action = componentMap[interaction.componentId] ?: return@on
-        action()
-    }
-    bot.on<ModalSubmitInteractionCreateEvent> {
-        val action = modalMap[interaction.modalId] ?: return@on
-        action()
-    }
+        bot.on(consumer = MessageCreateEvent::onMessageSend)
 
-    println("Logging in")
-    bot.login {
-        @OptIn(PrivilegedIntent::class)
-        intents = Intents.ALL
+        println("Registering commands")
+        val commandMap = CommandExecutor.all.associateBy {
+            bot.createGuildChatInputCommand(
+                SERVER_ID,
+                it.name,
+                it.description,
+                it.args
+            ).id
+        }
+        bot.on<CommandEvent> {
+            val command = commandMap[interaction.command.rootId] ?: return@on
+            val permission = command.permission
+            if (permission == null || interaction.user.isAtLeast(permission)) {
+                with(command) { execute() }
+            } else {
+                interaction.respondEphemeral("You do not have permission to use this command.")
+            }
+        }
+        bot.on<ComponentInteractionCreateEvent> {
+            val action = componentMap[interaction.componentId] ?: return@on
+            action()
+        }
+        bot.on<ModalSubmitInteractionCreateEvent> {
+            val action = modalMap[interaction.modalId] ?: return@on
+            action()
+        }
+
+        println("Logging in")
+        bot.login {
+            @OptIn(PrivilegedIntent::class)
+            intents = Intents.ALL
+        }
     }
 }
 
