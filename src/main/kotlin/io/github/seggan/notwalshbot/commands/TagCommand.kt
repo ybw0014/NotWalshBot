@@ -28,6 +28,9 @@ object TagCommand : CommandExecutor("tag", "Tag management") {
             string("name", "The name of the alias") { required = true }
             string("target", "The name of the target tag") { required = true }
         }
+        subCommand("show", "Shows a tag") {
+            string("name", "The name of the tag") { required = true }
+        }
     }
 
     override val permission = Roles.addonDeveloper
@@ -124,6 +127,12 @@ object TagCommand : CommandExecutor("tag", "Tag management") {
                 Tags[name!!] = Tag.Alias(name, target)
                 Tags.save()
                 interaction.respondPublic("Alias `$name` created for `$target`")
+            }
+
+            "show" -> {
+                val tagName = command.strings["name"]!!
+                val tag = Tags[tagName]?.content ?: "Tag not found"
+                interaction.respondPublic(tag)
             }
         }
     }
