@@ -30,6 +30,14 @@ tasks.test {
     useJUnitPlatform()
 }
 
-kotlin {
-    jvmToolchain(17)
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+tasks.compileKotlin {
+    kotlinOptions {
+        javaParameters = true
+        jvmTarget = "17"
+    }
 }
