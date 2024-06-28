@@ -21,7 +21,7 @@ object Warnings : Iterable<Warning> {
             warningsFile.parent.createDirectories()
             warningsFile.writeText("[]")
         }
-        val loaded: List<Warning> = warningsFile.inputStream().use { Json.decodeFromStream(it) }
+        val loaded: List<Warning> = warningsFile.inputStream().use(Json::decodeFromStream)
         warnings = loaded.groupByTo(mutableMapOf(), Warning::userId)
     }
 

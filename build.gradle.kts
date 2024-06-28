@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "io.github.seggan"
-version = "1.0-SNAPSHOT"
+version = "1.1.0"
 
 repositories {
     mavenCentral()
@@ -32,4 +32,11 @@ tasks.test {
 
 kotlin {
     jvmToolchain(17)
+}
+
+tasks.jar {
+    manifest {
+        attributes["Implementation-Title"] = project.name
+        attributes["Implementation-Version"] = project.version
+    }
 }

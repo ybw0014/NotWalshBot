@@ -12,6 +12,9 @@ import kotlin.time.Duration.Companion.seconds
 
 object ScamFilter : MessageFilter {
 
+    private val urlRegex =
+        """(http(s)?://.)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&/=]*)""".toRegex()
+
     private val scamCache = mutableSetOf<Regex>()
 
     override suspend fun test(message: Message): Boolean {
@@ -25,21 +28,19 @@ object ScamFilter : MessageFilter {
             reason = "Scam link"
             deleteMessageDuration = 0.seconds
         }
+        val content = message.content
+            .replace(urlRegex) { "<${it.groups[1]?.value}>" }
+            .replace("@", "\\@")
         Channels.BOT_LOGS.get()
-            .createMessage("Banned ${message.author?.mention} for sending scam link: ${message.content}")
+            .createMessage("Banned ${message.author?.mention} for sending scam link: $content")
     }
 
     suspend fun updateScamCache() {
-        val oldCacheSize = scamCache.size
         scamCache.clear()
         addToScamCache("https://bad-domains.walshy.dev/domains.txt")
         addToScamCache("https://raw.githubusercontent.com/DevSpen/scam-links/master/src/links.txt")
         addToScamCache("https://raw.githubusercontent.com/BuildBot42/discord-scam-links/main/list.txt")
         addToScamCache("https://raw.githubusercontent.com/Discord-AntiScam/scam-links/main/list.txt")
-        val newLinks = scamCache.size - oldCacheSize
-        if (newLinks > 0) {
-            log("Updated scam cache with $newLinks new links")
-        }
     }
 
     private suspend fun addToScamCache(url: String) {

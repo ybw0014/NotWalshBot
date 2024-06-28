@@ -38,7 +38,8 @@ fun main() {
 
         bot.on<ReadyEvent> {
             log("Hello, World!")
-            log("Started with session ID `$sessionId` at <t:${Clock.System.now().epochSeconds}:F>")
+            log("NotWalshBot version ${javaClass.`package`.implementationVersion} running with " +
+                    "session ID `$sessionId` (started at <t:${Clock.System.now().epochSeconds}:F>)")
             println("Ready")
         }
         bot.on(consumer = MessageCreateEvent::onMessageSend)
